@@ -41,9 +41,7 @@ void QHostInfoFunctor::operator()(const QHostInfo &hostInfo)
 // @snippet qhostinfo-lookuphost-callable
 
 // @snippet qhttpheaderrange-from-sequence
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-using HttpHeaderRange = QHttpHeaderRangeSpec;
-#else
+#if QT_VERSION < QT_VERSION_CHECK(6, 12, 0)
 // Temporary compatibility for Qt < 6.12. Mirror qtbase/5b1c236825's
 // QHttpHeaders range helpers using the existing raw-header API.
 struct HttpHeaderRange
@@ -113,6 +111,11 @@ static void setHttpHeaderRanges(QHttpHeaders &headers, const QList<HttpHeaderRan
 }
 #endif
 
+// The helpers below are shared with the QHttpHeaderRangeSet wrapper (Qt 6.12 only).
+// @snippet qhttpheaderrangeset-from-sequence
+#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
+using HttpHeaderRange = QHttpHeaderRangeSpec;
+#endif
 using RangeType = qint64;
 
 static std::optional<RangeType> rangeValueFromPython(PyObject *t)
@@ -140,20 +143,59 @@ static PyObject *rangeValueToPython(const std::optional<RangeType> &v)
         return PyLong_FromLongLong(v.value());
     Py_RETURN_NONE;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
+[[maybe_unused]] static QList<QHttpHeaderRangeSpec> rangeSequenceToQList(PyObject *sequence)
+{
+    const auto size = PySequence_Size(sequence);
+    QList<QHttpHeaderRangeSpec> result;
+    result.reserve(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        Shiboken::AutoDecRef start(PySequence_GetItem(sequence, i));
+        result.append(qHttpHeaderRangeFromSequence(start.object()));
+    }
+    return result;
+}
+#endif
+// @snippet qhttpheaderrangeset-from-sequence
 // @snippet qhttpheaderrange-from-sequence
 
+// @snippet qhttpheaderrangeset-sequence-constructor
+%0 = new QHttpHeaderRangeSet(rangeSequenceToQList(%PYARG_1));
+// @snippet qhttpheaderrangeset-sequence-constructor
+
+// @snippet qhttpheaderrangeset-ranges
+const QSpan<const QHttpHeaderRangeSpec> ranges = %CPPSELF.%FUNCTION_NAME();
+const auto size = ranges.size();
+%PYARG_0 = PyList_New(size);
+for (Py_ssize_t i = 0; i < size; ++i) {
+    const auto &range = ranges[i];
+    PyObject *ob = PyTuple_Pack(2, rangeValueToPython(range.start),
+                                rangeValueToPython(range.end));
+    PyList_SetItem(%PYARG_0, i, ob);
+}
+// @snippet qhttpheaderrangeset-ranges
+
+// @snippet qhttpheaderrangeset-setranges
+%CPPSELF.%FUNCTION_NAME(rangeSequenceToQList(%PYARG_1));
+// @snippet qhttpheaderrangeset-setranges
+
 // @snippet qhttpheaders-rangevalues
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-const auto rangesOpt = %CPPSELF.%FUNCTION_NAME();
-#else
-const auto rangesOpt = httpHeaderRanges(*%CPPSELF);
-#endif
+const std::optional<QHttpHeaderRangeSet> rangesOpt = %CPPSELF.%FUNCTION_NAME();
 if (rangesOpt.has_value()) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-    const auto ranges = rangesOpt.value().ranges();
-#else
+    const QHttpHeaderRangeSet &ranges = rangesOpt.value();
+    %PYARG_0 = %CONVERTTOPYTHON[QHttpHeaderRangeSet](ranges);
+} else {
+    %PYARG_0 = Py_None;
+    Py_INCREF(Py_None);
+}
+// @snippet qhttpheaders-rangevalues
+
+// Qt < 6.12 has no QHttpHeaderRangeSet: return the ranges as a list of (start, end) tuples.
+// @snippet qhttpheaders-rangevalues-list
+const auto rangesOpt = httpHeaderRanges(*%CPPSELF);
+if (rangesOpt.has_value()) {
     const auto &ranges = rangesOpt.value();
-#endif
     const auto size = ranges.size();
     %PYARG_0 = PyList_New(size);
     if (%PYARG_0 == nullptr)
@@ -177,7 +219,7 @@ if (rangesOpt.has_value()) {
     %PYARG_0 = Py_None;
     Py_INCREF(Py_None);
 }
-// @snippet qhttpheaders-rangevalues
+// @snippet qhttpheaders-rangevalues-list
 
 // @snippet qhttpheaders-setrangevalues
 const auto size = PySequence_Size(%PYARG_1);
