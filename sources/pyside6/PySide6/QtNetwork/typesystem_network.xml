@@ -95,19 +95,38 @@
         <enum-type name="PolicyFlag" flags="PolicyFlags"/>
     </value-type>
     <value-type name="QHttp1Configuration"/>
-    <value-type name="QHttpHeaders" since="6.7">
+    <value-type name="QHttpHeaderRangeSet" since="6.12">
         <inject-code class="native" position="beginning"
                      file="../glue/qtnetwork.cpp" snippet="qhttpheaderrange-from-sequence"/>
+        <add-function signature="QHttpHeaderRangeSet(PySequence@list@)">
+            <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaderrangeset-sequence-constructor"/>
+        </add-function>
+        <add-function signature="setRanges(PySequence@list@)">
+            <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaderrangeset-setranges"/>
+        </add-function>
+        <add-function signature="ranges()" return-type="PySequence">
+            <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaderrangeset-ranges"/>
+        </add-function>
+    </value-type>
+    <value-type name="QHttpHeaders" since="6.7">
+        <inject-code class="native" position="beginning" until="6.11.999"
+                     file="../glue/qtnetwork.cpp" snippet="qhttpheaderrange-from-sequence"/>
         <enum-type name="WellKnownHeader"/>
-        <add-function signature="setRangeValues(PySequence@list@)">
+        <add-function signature="setRangeValues(PySequence@list@)" until="6.11.999">
             <inject-documentation format="target" mode="append" file="../doc/qtnetwork.rst"
                                   snippet="qhttpheaders-setrangevalues"/>
             <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaders-setrangevalues"/>
         </add-function>
-        <add-function signature="rangeValues()" return-type="PySequence">
+        <add-function signature="rangeValues()" return-type="PySequence"
+                       doc-signature="rangeValues() const" until="6.11.999">
             <inject-documentation format="target" mode="append" file="../doc/qtnetwork.rst"
                                   snippet="qhttpheaders-rangevalues"/>
             <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaders-rangevalues"/>
+        </add-function>
+        <add-function signature="rangeValues()" return-type="PyObject"
+                       doc-signature="rangeValues() const" since="6.12">
+            <modify-argument index="return" pyi-type="Optional[PySide6.QtNetwork.QHttpHeaderRangeSet]"/>
+            <inject-code file="../glue/qtnetwork.cpp" snippet="qhttpheaders-rangevalues-612"/>
         </add-function>
     </value-type>
     <object-type name="QHttpMultiPart">

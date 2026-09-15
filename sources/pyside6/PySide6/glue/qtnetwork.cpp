@@ -140,20 +140,77 @@ static PyObject *rangeValueToPython(const std::optional<RangeType> &v)
         return PyLong_FromLongLong(v.value());
     Py_RETURN_NONE;
 }
+
+static bool rangeSequenceToQList(PyObject *sequence, QList<HttpHeaderRange> *result)
+{
+    const auto size = PySequence_Size(sequence);
+    if (size < 0)
+        return false;
+    result->reserve(size);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+        Shiboken::AutoDecRef item(PySequence_GetItem(sequence, i));
+        if (item.isNull())
+            return false;
+        result->append(qHttpHeaderRangeFromSequence(item.object()));
+        if (PyErr_Occurred())
+            return false;
+    }
+    return true;
+}
 // @snippet qhttpheaderrange-from-sequence
 
-// @snippet qhttpheaders-rangevalues
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-const auto rangesOpt = %CPPSELF.%FUNCTION_NAME();
-#else
-const auto rangesOpt = httpHeaderRanges(*%CPPSELF);
-#endif
+// @snippet qhttpheaderrangeset-sequence-constructor
+QList<HttpHeaderRange> ranges;
+if (!rangeSequenceToQList(%PYARG_1, &ranges))
+    return -1;
+%0 = new QHttpHeaderRangeSet(ranges);
+// @snippet qhttpheaderrangeset-sequence-constructor
+
+// @snippet qhttpheaderrangeset-ranges
+const QSpan<const QHttpHeaderRangeSpec> ranges = %CPPSELF.%FUNCTION_NAME();
+const auto size = ranges.size();
+%PYARG_0 = PyList_New(size);
+if (%PYARG_0 == nullptr)
+    return nullptr;
+for (Py_ssize_t i = 0; i < size; ++i) {
+    const auto &range = ranges[i];
+    Shiboken::AutoDecRef start(rangeValueToPython(range.start));
+    Shiboken::AutoDecRef end(rangeValueToPython(range.end));
+    if (start.isNull() || end.isNull()) {
+        Py_DECREF(%PYARG_0);
+        return nullptr;
+    }
+    PyObject *ob = PyTuple_Pack(2, start.object(), end.object());
+    if (ob == nullptr) {
+        Py_DECREF(%PYARG_0);
+        return nullptr;
+    }
+    PyList_SetItem(%PYARG_0, i, ob);
+}
+// @snippet qhttpheaderrangeset-ranges
+
+// @snippet qhttpheaderrangeset-setranges
+QList<HttpHeaderRange> ranges;
+if (!rangeSequenceToQList(%PYARG_1, &ranges))
+    return nullptr;
+%CPPSELF.%FUNCTION_NAME(ranges);
+// @snippet qhttpheaderrangeset-setranges
+
+// @snippet qhttpheaders-rangevalues-612
+const std::optional<QHttpHeaderRangeSet> rangesOpt = %CPPSELF.%FUNCTION_NAME();
 if (rangesOpt.has_value()) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-    const auto ranges = rangesOpt.value().ranges();
-#else
+    const QHttpHeaderRangeSet &ranges = rangesOpt.value();
+    %PYARG_0 = %CONVERTTOPYTHON[QHttpHeaderRangeSet](ranges);
+} else {
+    %PYARG_0 = Py_None;
+    Py_INCREF(Py_None);
+}
+// @snippet qhttpheaders-rangevalues-612
+
+// @snippet qhttpheaders-rangevalues
+const auto rangesOpt = httpHeaderRanges(*%CPPSELF);
+if (rangesOpt.has_value()) {
     const auto &ranges = rangesOpt.value();
-#endif
     const auto size = ranges.size();
     %PYARG_0 = PyList_New(size);
     if (%PYARG_0 == nullptr)
@@ -180,24 +237,10 @@ if (rangesOpt.has_value()) {
 // @snippet qhttpheaders-rangevalues
 
 // @snippet qhttpheaders-setrangevalues
-const auto size = PySequence_Size(%PYARG_1);
-if (size < 0)
-    return nullptr;
 QList<HttpHeaderRange> values;
-values.reserve(size);
-for (Py_ssize_t i = 0; i < size; ++i) {
-    Shiboken::AutoDecRef start(PySequence_GetItem(%PYARG_1, i));
-    if (start.isNull())
-        return nullptr;
-    values.append(qHttpHeaderRangeFromSequence(start.object()));
-    if (PyErr_Occurred())
-        return nullptr;
-}
-#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-%CPPSELF.%FUNCTION_NAME(QHttpHeaderRangeSet(values));
-#else
+if (!rangeSequenceToQList(%PYARG_1, &values))
+    return nullptr;
 setHttpHeaderRanges(*%CPPSELF, values);
-#endif
 // @snippet qhttpheaders-setrangevalues
 
 // @snippet qipv6address-len
