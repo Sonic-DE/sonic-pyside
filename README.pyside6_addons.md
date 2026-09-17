@@ -41,12 +41,7 @@ it includes the following Qt modules:
 * QtTextToSpeech
 * QtVirtualKeyboard
 * QtWebChannel
-* QtWebEngineCore
-* QtWebEngineQuick
-* QtWebEngineWidgets
 * QtWebSockets
-* QtPdf
-* QtPdfWidgets
 * QtHttpServer
 * QtLocation
 * QtAsyncio
