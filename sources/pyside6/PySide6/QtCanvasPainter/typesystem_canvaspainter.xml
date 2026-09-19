@@ -39,7 +39,13 @@
     <object-type name="QCanvasPainterFactory"/>
     <value-type name="QCanvasPath"/>
     <object-type name="QCanvasPainterWidget">
-        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,QObject*@context@,PyCallable*@resultCallback@)">
+        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,PyCallable*@resultCallback@)" until="6.11.999">
+            <inject-code class="target" position="beginning" file="../glue/qtcanvaspainter.cpp"
+                         snippet="qcpainterwidget-grabcanvas-qt611"/>
+            <inject-documentation format="target" mode="append" file="../doc/qtcanvaspainter.rst"
+                                  snippet="qcpainterwidget-grabcanvas"/>
+        </add-function>
+        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,QObject*@context@,PyCallable*@resultCallback@)" since="6.12">
             <inject-code class="target" position="beginning" file="../glue/qtcanvaspainter.cpp"
                          snippet="qcpainterwidget-grabcanvas"/>
             <inject-documentation format="target" mode="append" file="../doc/qtcanvaspainter.rst"
@@ -50,7 +56,13 @@
     <object-type name="QCanvasRhiPaintDriver">
         <enum-type name="BeginPaintFlag" flags="BeginPaintFlags"/>
         <enum-type name="EndPaintFlag" flags="EndPaintFlags"/>
-        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,QObject*@context@,PyCallable*@resultCallback@)">
+        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,PyCallable*@resultCallback@)" until="6.11.999">
+            <inject-code class="target" position="beginning" file="../glue/qtcanvaspainter.cpp"
+                         snippet="qcpainterwidget-grabcanvas-qt611"/>
+            <inject-documentation format="target" mode="append" file="../doc/qtcanvaspainter.rst"
+                                  snippet="qcpainterwidget-grabcanvas"/>
+        </add-function>
+        <add-function signature="grabCanvas(const QCanvasOffscreenCanvas &amp;@canvas@,QObject*@context@,PyCallable*@resultCallback@)" since="6.12">
             <inject-code class="target" position="beginning" file="../glue/qtcanvaspainter.cpp"
                          snippet="qcpainterwidget-grabcanvas"/>
             <inject-documentation format="target" mode="append" file="../doc/qtcanvaspainter.rst"
