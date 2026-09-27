@@ -12,7 +12,7 @@ dependencies:
     ref: f0edfedb1a770f6389d26ad6f2769d5819391360
     required: true
   ../../qt/qtdoc:
-    ref: 34dea4d6d7f7e4ca2eefc2073132094a0d200349
+    ref: 0c98a846e11c56b0576f98cf8497345ae4adec40
     required: true
   ../../qt/qtgrpc:
     ref: 743a5066f9072e34835a193e045df233a1762e1c
@@ -51,5 +51,5 @@ dependencies:
     ref: 934b432b13cae5c64357a5e98547280bd191f806
     required: true
   ../../qt/qtwebview:
-    ref: 90da68c8b4f82b0c5af52be51dafb63ac902baa0
+    ref: 5774c23849cdad2bcdf71ad8c8bd6946dcae38f0
     required: true
