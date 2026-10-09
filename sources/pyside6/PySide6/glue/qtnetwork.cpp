@@ -42,7 +42,7 @@ void QHostInfoFunctor::operator()(const QHostInfo &hostInfo)
 
 // @snippet qhttpheaderrange-from-sequence
 #if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-using HttpHeaderRange = QHttpHeaderRange;
+using HttpHeaderRange = QHttpHeaderRangeSpec;
 #else
 // Temporary compatibility for Qt < 6.12. Mirror qtbase/5b1c236825's
 // QHttpHeaders range helpers using the existing raw-header API.
@@ -149,13 +149,17 @@ const auto rangesOpt = %CPPSELF.%FUNCTION_NAME();
 const auto rangesOpt = httpHeaderRanges(*%CPPSELF);
 #endif
 if (rangesOpt.has_value()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
+    const auto ranges = rangesOpt.value().ranges();
+#else
     const auto &ranges = rangesOpt.value();
+#endif
     const auto size = ranges.size();
     %PYARG_0 = PyList_New(size);
     if (%PYARG_0 == nullptr)
         return nullptr;
     for (Py_ssize_t i = 0; i < size; ++i) {
-        const auto &range = ranges.at(i);
+        const auto &range = ranges[i];
         Shiboken::AutoDecRef start(rangeValueToPython(range.start));
         Shiboken::AutoDecRef end(rangeValueToPython(range.end));
         if (start.isNull() || end.isNull()) {
@@ -190,7 +194,7 @@ for (Py_ssize_t i = 0; i < size; ++i) {
         return nullptr;
 }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 12, 0)
-%CPPSELF.%FUNCTION_NAME(values);
+%CPPSELF.%FUNCTION_NAME(QHttpHeaderRangeSet(values));
 #else
 setHttpHeaderRanges(*%CPPSELF, values);
 #endif
