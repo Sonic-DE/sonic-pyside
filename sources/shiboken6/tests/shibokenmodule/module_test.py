@@ -96,6 +96,36 @@ class TestShiboken(unittest.TestCase):
         self.assertFalse(Shiboken.isValid(obj))
         self.assertFalse(Shiboken.isValid(child))
 
+    def testInvalidateSequenceItemError(self):
+        for sequence_type in (list, tuple):
+            class BrokenItem(sequence_type):
+                def __getitem__(self, index):
+                    raise ValueError("sequence item error")
+
+            with self.subTest(sequence_type=sequence_type):
+                with self.assertRaisesRegex(ValueError, "sequence item error"):
+                    Shiboken.invalidate(BrokenItem([None]))
+
+    def testInvalidateSequenceLengthError(self):
+        for sequence_type in (list, tuple):
+            class BrokenLength(sequence_type):
+                def __len__(self):
+                    raise ValueError("sequence length error")
+
+            with self.subTest(sequence_type=sequence_type):
+                with self.assertRaisesRegex(ValueError, "sequence length error"):
+                    Shiboken.invalidate(BrokenLength([None]))
+
+    def testInvalidateSequenceOverReportedLength(self):
+        for sequence_type in (list, tuple):
+            class OverReportedLength(sequence_type):
+                def __len__(self):
+                    return super().__len__() + 1
+
+            with self.subTest(sequence_type=sequence_type):
+                with self.assertRaises(IndexError):
+                    Shiboken.invalidate(OverReportedLength([None]))
+
     def testVersionAttr(self):
         self.assertEqual(type(Shiboken.__version__), str)
         self.assertTrue(len(Shiboken.__version__) >= 5)

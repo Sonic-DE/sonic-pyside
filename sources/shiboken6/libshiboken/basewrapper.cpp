@@ -1112,8 +1112,13 @@ static void traverseSequence(PyObject *pyObj, Function func)
     // Check for list/tuple explicitly, suppressing classes implementing the sequence protocol
     // like QPolygon (PYSIDE-3423).
     if (PyTuple_Check(pyObj) != 0 || PyList_Check(pyObj) != 0) {
-        for (Py_ssize_t i = 0, size = PySequence_Size(pyObj); i < size; ++i) {
+        const auto size = PySequence_Size(pyObj);
+        if (size < 0)
+            return;
+        for (Py_ssize_t i = 0; i < size; ++i) {
             Shiboken::AutoDecRef item(PySequence_GetItem(pyObj, i));
+            if (item.isNull())
+                return;
             if (Object::checkType(item))
                 func(reinterpret_cast<SbkObject *>(item.object()));
         }
