@@ -4,7 +4,7 @@ Lets apps written in Python use Qt, the toolkit SonicDE is built with, so they f
 
 ## Unreleased
 
-No SonicDE-specific changes in this release; it brings the package up to date with upstream.
+- Builds on FreeBSD and GhostBSD.
 
 ## 6.11.2.2 (2026-10-09)
 

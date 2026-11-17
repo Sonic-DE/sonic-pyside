@@ -607,7 +607,7 @@ ThreadId currentThreadId()
 {
 #if defined(_WIN32)
     return GetCurrentThreadId();
-#elif defined(__APPLE_CC__)
+#elif defined(__APPLE_CC__) || defined(__FreeBSD__)
     return reinterpret_cast<ThreadId>(pthread_self());
 #else
     return pthread_self();

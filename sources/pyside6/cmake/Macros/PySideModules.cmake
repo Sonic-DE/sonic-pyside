@@ -244,6 +244,10 @@ macro(create_pyside_module)
         ${qt_core_includes}
         ${qt_module_includes}
     )
+    # FreeBSD's compiler doesn't search /usr/local/include, where packages such as GL/gl.h live.
+    if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+        list(APPEND shiboken_include_dir_list /usr/local/include)
+    endif()
     if(module_ADDITIONAL_INCLUDE_DIRS)
         list(APPEND shiboken_include_dir_list ${${module_ADDITIONAL_INCLUDE_DIRS}})
     endif()
