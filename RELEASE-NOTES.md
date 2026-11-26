@@ -5,6 +5,7 @@ Lets apps written in Python use Qt, the toolkit SonicDE is built with, so they f
 ## Unreleased
 
 - Builds on FreeBSD and GhostBSD.
+- Behind the scenes: one less warning when the bindings are generated.
 
 ## 6.11.2.2 (2026-10-09)
 

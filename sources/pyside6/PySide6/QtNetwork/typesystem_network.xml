@@ -294,6 +294,12 @@
         <modify-function signature="QHostAddress(const quint8*)" remove="all"/>
        <!-- ### -->
         <modify-function signature="setAddress(const quint8*)" remove="all"/>
+        <!-- Keep returning a plain int, as before; the ok out-argument is not exposed. -->
+        <modify-function signature="toIPv4Address(bool*)const">
+            <modify-argument index="1">
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
     </value-type>
 
     <value-type name="QHostInfo">
